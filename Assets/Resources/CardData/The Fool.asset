@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe8883c4e804a4aedb12a21c5434e4d7, type: 3}
+  m_Name: The Fool
+  m_EditorClassIdentifier: 
+  cardName: The Fool
+  order: 0
+  cardPicture: {fileID: 2800000, guid: 6a093e7f38ed546e5819580fa3240a1f, type: 3}
+  cardPicture2x: {fileID: 21300000, guid: d4ce4edb035d64d04914e07a749db6cc, type: 3}
+  cardTextMain: The Fool is the innocent soul, not yet turned aside by distractions
+    from their innate path of wonder. They live captivated by the world around them,
+    but its material burdens could always upset their delicate trance.
+  cardTextUpright: 'The Fool shows the strength of one''s least-affected purpose and
+    the grounding it gives them in their daily life.
+
+
+    Be sensitve to the moment you occupy. '
+  cardTextReversed: "Reversed, The Fool has tumbled, and lost their path amidst countless
+    decisions that seem so much more important.\n \nThere is peace for you in the
+    simple patterns you used to trace; find them again."
