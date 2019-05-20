@@ -45,9 +45,12 @@ public class Deck : MonoBehaviour
     public Canvas readingCanvas;
     public Canvas generativeCanvas;
 
+    private CardReadingUI readingUI;
+    private GenerativeUI generativeUI;
+
+
     public Object[] cardsData;
     private List<int> cardsAlreadyDealt;
-    private TarotCard currentCard;
     private List<TarotCard> dealtCards;
     private int numCardsAlreadyRead = 0;
 
@@ -55,11 +58,32 @@ public class Deck : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        cardsData = Resources.LoadAll("CardData", typeof(TarotCardData));
+        readingUI = readingCanvas.GetComponent<CardReadingUI>();
+        generativeUI = generativeCanvas.GetComponent<GenerativeUI>();
+        ResetGameState();
+    }
+
+    void ClearGameState() {
+        StopAllCoroutines();
+        foreach (TarotCard tcard in dealtCards) {
+            tcard.StopAllCoroutines();
+            Destroy(tcard.gameObject);
+        }
+        foreach (DeckCard dcard in cards) {
+            dcard.StopAllCoroutines();
+            Destroy(dcard.gameObject);
+        }
+        numCardsAlreadyRead = 0;
+        readingUI.StopAllCoroutines();
+        StartCoroutine(readingUI.FadeOut());
+        generativeUI.StopAllCoroutines();
+        StartCoroutine(generativeUI.FadeOut());
+    }
+    void ResetGameState() {
         cardsAlreadyDealt = new List<int>();
         dealtCards = new List<TarotCard>();
-        cardsData = Resources.LoadAll("CardData", typeof(TarotCardData));
-        gameState = GameState.Shuffling;
-        Vector3[] shuffleTargets = getShuffleTargets();
+        gameState = GameState.ReadyToDeal;
         cards = new DeckCard[numberOfCards];
         for (int i = 0; i < numberOfCards; i++) {
             cards[i] = Instantiate(deckCardPrefab).GetComponent<DeckCard>();
@@ -68,10 +92,10 @@ public class Deck : MonoBehaviour
                 transform.position.y,
                 transform.position.z - (i * 1f)
             );
-            PopulateCardProps(cards[i], i, shuffleTargets);
+            PopulateCardProps(cards[i], i, getShuffleTargets());
         }
-    }
 
+    }
     // Runs every frame.
     // Used in this class to handle user input.
     void Update() {
@@ -115,16 +139,16 @@ public class Deck : MonoBehaviour
     // and should be subject to its whims
 
     void PopulateCardProps(DeckCard card, int cardIndex, Vector3[] shuffleTargets) {
-            card.transform.parent = transform;
-            card.shuffleTargets = shuffleTargets;
-            card.shuffleSpeed = shuffleSpeed;
-            card.timeBetweenShuffles = timeBetweenShuffles;
-            card.timeBetweenCards = timeBetweenCards;
-            card.deck = this;
-            card.Init(
-                (cardIndex - numberOfCards / 2) > 0 ? 1 : 0,
-                Mathf.RoundToInt(Mathf.Repeat(cardIndex, numberOfCards / 2))
-            );
+        card.transform.parent = transform;
+        card.shuffleTargets = shuffleTargets;
+        card.shuffleSpeed = shuffleSpeed;
+        card.timeBetweenShuffles = timeBetweenShuffles;
+        card.timeBetweenCards = timeBetweenCards;
+        card.deck = this;
+        card.Init(
+            (cardIndex - numberOfCards / 2) > 0 ? 1 : 0,
+            Mathf.RoundToInt(Mathf.Repeat(cardIndex, numberOfCards / 2))
+        );
 
     }
 
@@ -182,7 +206,6 @@ public class Deck : MonoBehaviour
     }
 
     void FadeOutDeck() {
-        Debug.Log("fading out deck...");
         foreach (DeckCard card in cards) {
             StartCoroutine(card.FadeOut());
         }
@@ -230,14 +253,13 @@ public class Deck : MonoBehaviour
     }
 
     IEnumerator ReadCard() {
-        CardReadingUI readingHandler = readingCanvas.GetComponent<CardReadingUI>();
-        readingHandler.Init(dealtCards[numCardsAlreadyRead]);
-        yield return StartCoroutine(readingHandler.FadeIn());
-        while (readingHandler.fading) {
+        readingUI.Init(dealtCards[numCardsAlreadyRead]);
+        yield return StartCoroutine(readingUI.FadeIn());
+        while (readingUI.fading) {
             yield return null;
         }
-        yield return StartCoroutine(readingHandler.ReadCard());
-        while (readingHandler.reading) {
+        yield return StartCoroutine(readingUI.ReadCard());
+        while (readingUI.reading) {
             yield return null;
         }
         numCardsAlreadyRead++;
@@ -245,9 +267,9 @@ public class Deck : MonoBehaviour
     }
 
     IEnumerator FadeOutReading() {
-        CardReadingUI readingHandler = readingCanvas.GetComponent<CardReadingUI>();
-        yield return StartCoroutine(readingHandler.FadeOut());
-        while (readingHandler.fading) {
+        CardReadingUI readingUI = readingCanvas.GetComponent<CardReadingUI>();
+        yield return StartCoroutine(readingUI.FadeOut());
+        while (readingUI.fading) {
             yield return null;
         }
         if (numCardsAlreadyRead < dealtCards.Count) {
@@ -261,7 +283,6 @@ public class Deck : MonoBehaviour
         foreach(TarotCard card in dealtCards) {
             StartCoroutine(card.FadeOut());
         }
-        GenerativeUI generativeUI = generativeCanvas.GetComponent<GenerativeUI>();
         yield return StartCoroutine(generativeUI.FadeIn());
         while (generativeUI.fading) {
             yield return null;
@@ -274,5 +295,14 @@ public class Deck : MonoBehaviour
     IEnumerator DoGenerativePhase() {
         GenerativeUI generativeUI = generativeCanvas.GetComponent<GenerativeUI>();
         yield return StartCoroutine(generativeUI.DoGeneration(dealtCards));
+    }
+
+    public void QuitGame() {
+        Application.Quit();
+    }
+
+    public void StartOver() {
+        ClearGameState();
+        ResetGameState();
     }
 }

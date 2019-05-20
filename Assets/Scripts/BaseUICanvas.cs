@@ -11,6 +11,7 @@ public class BaseUICanvas : MonoBehaviour
     public CanvasGroup canvasGroup;
 
     public IEnumerator FadeIn() {
+        if (canvasGroup.alpha >= 1) { yield break; }
         fading = true;
         float t = 0;
         while (t < 1.0) {
@@ -22,6 +23,7 @@ public class BaseUICanvas : MonoBehaviour
     }
 
     public IEnumerator FadeOut() {
+        if (canvasGroup.alpha <=0) { yield break; }
         fading = true;
         float t = 0;
         while (t < 1.0) {
