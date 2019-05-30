@@ -6,19 +6,17 @@ using UnityEngine;
 // Basically just visual sugar.
 
 public enum GameState {
-    Shuffling,
-    Finishing_Shuffling,
     ReadyToDeal,
     Dealing,
-    ReadyToFlip,
-    Flipping,
-    ReadyToRead,
-    Reading,
-    ReadyToFadeOutReading,
+    DealingDone,
+    FlippingCard,
+    FlippingCardDone,
+    ReadingCard,
+    ReadingCardDone,
     FadingOutCard,
-    ReadyToBeginGenerativePhase,
-    BeginningGenerativePhase,
-    ReadyToDoGenerativePhase,
+    FadingOutCardDone,
+    ShowingGenerativeUI,
+    ShowingGenerativeUIDone,
     GenerativePhase,
     Done
 }
@@ -79,7 +77,9 @@ public class Deck : MonoBehaviour
         StartCoroutine(readingUI.FadeOut());
         generativeUI.StopAllCoroutines();
         StartCoroutine(generativeUI.FadeOut());
+        generativeUI.Reset();
     }
+
     void ResetGameState() {
         cardsAlreadyDealt = new List<int>();
         dealtCards = new List<TarotCard>();
@@ -92,7 +92,6 @@ public class Deck : MonoBehaviour
                 transform.position.y,
                 transform.position.z - (i * 1f)
             );
-            PopulateCardProps(cards[i], i, getShuffleTargets());
         }
 
     }
@@ -101,30 +100,27 @@ public class Deck : MonoBehaviour
     void Update() {
         if (Input.GetMouseButtonDown(0)) {
             switch (gameState) {
-                case GameState.Shuffling:
-                    gameState = GameState.ReadyToDeal; // stop shuffling
-                    break;
                 case GameState.ReadyToDeal:
                     gameState = GameState.Dealing; // start dealing
                     DealCard();
                     break;
-                case GameState.ReadyToFlip:
-                    gameState = GameState.Flipping; // start dealing
+                case GameState.DealingDone:
+                    gameState = GameState.FlippingCard;
                     StartCoroutine(FlipCard());
                     break;
-                case GameState.ReadyToRead:
-                    gameState = GameState.Reading;
+                case GameState.FadingOutCardDone:
+                    gameState = GameState.FlippingCard;
+                    StartCoroutine(FlipCard());
+                    break;
+                case GameState.FlippingCardDone:
+                    gameState = GameState.ReadingCard;
                     StartCoroutine(ReadCard());
                     break;
-                case GameState.ReadyToFadeOutReading:
+                case GameState.ReadingCardDone:
                     gameState = GameState.FadingOutCard;
                     StartCoroutine(FadeOutReading());
                     break;
-                case GameState.ReadyToBeginGenerativePhase:
-                    gameState = GameState.BeginningGenerativePhase;
-                    StartCoroutine(BeginGenerativePhase());
-                    break;
-                case GameState.ReadyToDoGenerativePhase:
+                case GameState.ShowingGenerativeUIDone:
                     gameState = GameState.GenerativePhase;
                     StartCoroutine(DoGenerativePhase());
                     break;
@@ -132,58 +128,6 @@ public class Deck : MonoBehaviour
                     break;
             }
         }
-    }
-    // set props on cards used for shuffling.
-    // it's kind of tacky to do it this way (vs having these props be defined on the cards)
-    // but the cards exist exclusively for the benefit of the deck
-    // and should be subject to its whims
-
-    void PopulateCardProps(DeckCard card, int cardIndex, Vector3[] shuffleTargets) {
-        card.transform.parent = transform;
-        card.shuffleTargets = shuffleTargets;
-        card.shuffleSpeed = shuffleSpeed;
-        card.timeBetweenShuffles = timeBetweenShuffles;
-        card.timeBetweenCards = timeBetweenCards;
-        card.deck = this;
-        card.Init(
-            (cardIndex - numberOfCards / 2) > 0 ? 1 : 0,
-            Mathf.RoundToInt(Mathf.Repeat(cardIndex, numberOfCards / 2))
-        );
-
-    }
-
-    // shuffling order:
-    // - move to the bottom of the deck
-    // - move to the right of the deck
-    // - move up
-    // - move back to the top of the deck
-    Vector3[] getShuffleTargets() {
-        return new Vector3[] {
-            // bottom of the deck
-            new Vector3 (
-                transform.position.x,
-                transform.position.y,
-                transform.position.z - (numberOfCards * 5f)
-            ),
-            // to the right of the deck, still on the bottom
-            new Vector3 (
-                transform.position.x + shuffleDistanceFromDeck,
-                transform.position.y,
-                transform.position.z - (numberOfCards * 5f)
-            ),
-            // to the right of the deck, moved to the top
-            new Vector3 (
-                transform.position.x + shuffleDistanceFromDeck,
-                transform.position.y,
-                transform.position.z + 5f
-            ),
-            // top of the deck
-            new Vector3 (
-                transform.position.x,
-                transform.position.y,
-                transform.position.z + 5f
-            )
-        };
     }
 
     // instantiate card
@@ -224,7 +168,7 @@ public class Deck : MonoBehaviour
         }
         gameState = GameState.ReadyToDeal;
          if (cardsAlreadyDealt.Count == dealtCardLocations.Length) {
-            gameState = GameState.ReadyToFlip;
+            gameState = GameState.DealingDone;
         }
     }
 
@@ -249,7 +193,7 @@ public class Deck : MonoBehaviour
             );
             yield return null;
         }
-        gameState = GameState.ReadyToRead;
+        gameState = GameState.FlippingCardDone;
     }
 
     IEnumerator ReadCard() {
@@ -263,7 +207,7 @@ public class Deck : MonoBehaviour
             yield return null;
         }
         numCardsAlreadyRead++;
-        gameState = GameState.ReadyToFadeOutReading;
+        gameState = GameState.ReadingCardDone;
     }
 
     IEnumerator FadeOutReading() {
@@ -273,9 +217,10 @@ public class Deck : MonoBehaviour
             yield return null;
         }
         if (numCardsAlreadyRead < dealtCards.Count) {
-            gameState = GameState.ReadyToFlip;
+            gameState = GameState.FadingOutCardDone;
         } else {
-            gameState = GameState.ReadyToBeginGenerativePhase;
+            gameState = GameState.ShowingGenerativeUI;
+            StartCoroutine(BeginGenerativePhase());
         }
     }
 
@@ -288,9 +233,8 @@ public class Deck : MonoBehaviour
             yield return null;
         }
         yield return StartCoroutine(generativeUI.ReadText());
-        gameState = GameState.ReadyToDoGenerativePhase;
+        gameState = GameState.ShowingGenerativeUIDone;
     }
-
 
     IEnumerator DoGenerativePhase() {
         GenerativeUI generativeUI = generativeCanvas.GetComponent<GenerativeUI>();

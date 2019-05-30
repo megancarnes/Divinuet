@@ -39,6 +39,11 @@ public class GenerativeUI : BaseUICanvas
         ps.gameObject.SetActive(true);
     }
 
+    public void Reset() {
+        textCanvasGroup.alpha = 0;
+        ps.gameObject.SetActive(false);
+    }
+
     float GetColorFromCardOrder(int order) {
         return order < 7 ? order * 3 : (order + 78) * 3;
     }
