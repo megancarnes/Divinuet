@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: The Priestess
   m_EditorClassIdentifier: 
   cardName: The Priestess
-  order: 3
+  order: 2
+  suit: 0
   cardPicture: {fileID: 2800000, guid: c44d3ed3917d54566994c5c23932dcd0, type: 3}
   cardPicture2x: {fileID: 21300000, guid: 955857dcc711d4b7ca36e609ea1a998e, type: 3}
   cardTextMain: priestess main text

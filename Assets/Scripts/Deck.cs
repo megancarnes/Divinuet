@@ -2,9 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Stores a few cards and "shuffles" them for a visual effect.
-// Basically just visual sugar.
-
 public enum GameState {
     ReadyToDeal,
     Dealing,
@@ -27,11 +24,6 @@ public class Deck : MonoBehaviour
     public GameObject tarotCardPrefab;
     public DeckCard[] cards;
     public int numberOfCards;
-
-    public float shuffleSpeed;
-    public float timeBetweenShuffles;
-    public float shuffleDistanceFromDeck;
-    public float timeBetweenCards;
 
     public float cardDealSpeed;
     public float cardFlipSpeed;
@@ -93,8 +85,8 @@ public class Deck : MonoBehaviour
                 transform.position.z - (i * 1f)
             );
         }
-
     }
+
     // Runs every frame.
     // Used in this class to handle user input.
     void Update() {
