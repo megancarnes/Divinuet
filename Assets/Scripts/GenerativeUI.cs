@@ -23,12 +23,7 @@ public class GenerativeUI : BaseUICanvas
     }
 
     public IEnumerator DoGeneration(List<TarotCard> cards) {
-        float t = 0;
-        while (t < 1.0) {
-            t += Time.deltaTime / fadeSpeed;
-            textCanvasGroup.alpha = 1 - t;
-            yield return null;
-        }
+        yield return StartCoroutine(FadeOut());
         Color particleColor = new Color32();
         particleColor.r = GetColorFromCardOrder(cards[0].cardData.order);
         particleColor.g = GetColorFromCardOrder(cards[1].cardData.order);
@@ -40,7 +35,8 @@ public class GenerativeUI : BaseUICanvas
     }
 
     public void Reset() {
-        textCanvasGroup.alpha = 0;
+        // textCanvasGroup.alpha = 0;
+        text.maxVisibleCharacters = 0;
         ps.gameObject.SetActive(false);
     }
 

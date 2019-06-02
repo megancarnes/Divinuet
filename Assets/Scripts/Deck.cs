@@ -114,7 +114,7 @@ public class Deck : MonoBehaviour
                     break;
                 case GameState.ShowingGenerativeUIDone:
                     gameState = GameState.GenerativePhase;
-                    StartCoroutine(DoGenerativePhase());
+                    DoGenerativePhase();
                     break;
                 default:
                     break;
@@ -191,9 +191,6 @@ public class Deck : MonoBehaviour
     IEnumerator ReadCard() {
         readingUI.Init(dealtCards[numCardsAlreadyRead]);
         yield return StartCoroutine(readingUI.FadeIn());
-        while (readingUI.fading) {
-            yield return null;
-        }
         yield return StartCoroutine(readingUI.ReadCard());
         while (readingUI.reading) {
             yield return null;
@@ -205,14 +202,11 @@ public class Deck : MonoBehaviour
     IEnumerator FadeOutReading() {
         CardReadingUI readingUI = readingCanvas.GetComponent<CardReadingUI>();
         yield return StartCoroutine(readingUI.FadeOut());
-        while (readingUI.fading) {
-            yield return null;
-        }
         if (numCardsAlreadyRead < dealtCards.Count) {
             gameState = GameState.FadingOutCardDone;
         } else {
             gameState = GameState.ShowingGenerativeUI;
-            StartCoroutine(BeginGenerativePhase());
+            yield return StartCoroutine(BeginGenerativePhase());
         }
     }
 
@@ -221,16 +215,13 @@ public class Deck : MonoBehaviour
             StartCoroutine(card.FadeOut());
         }
         yield return StartCoroutine(generativeUI.FadeIn());
-        while (generativeUI.fading) {
-            yield return null;
-        }
         yield return StartCoroutine(generativeUI.ReadText());
         gameState = GameState.ShowingGenerativeUIDone;
     }
 
-    IEnumerator DoGenerativePhase() {
+    void DoGenerativePhase() {
         GenerativeUI generativeUI = generativeCanvas.GetComponent<GenerativeUI>();
-        yield return StartCoroutine(generativeUI.DoGeneration(dealtCards));
+        StartCoroutine(generativeUI.DoGeneration(dealtCards));
     }
 
     public void QuitGame() {

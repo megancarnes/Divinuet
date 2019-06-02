@@ -12,25 +12,21 @@ public class BaseUICanvas : MonoBehaviour
 
     public IEnumerator FadeIn() {
         if (canvasGroup.alpha >= 1) { yield break; }
-        fading = true;
         float t = 0;
         while (t < 1.0) {
             t += Time.deltaTime / fadeSpeed;
             canvasGroup.alpha = t;
             yield return null;
         }
-        fading = false;
     }
 
     public IEnumerator FadeOut() {
         if (canvasGroup.alpha <=0) { yield break; }
-        fading = true;
         float t = 0;
         while (t < 1.0) {
             t += Time.deltaTime / fadeSpeed;
             canvasGroup.alpha = 1 - t;
             yield return null;
         }
-        fading = false;
     }
 }

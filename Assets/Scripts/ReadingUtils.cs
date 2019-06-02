@@ -21,7 +21,6 @@ public static class ReadingUtils
             if (visibleCount >= text.textInfo.characterCount) {
                 reading = false;
             }
-            Debug.Log("waiting for seconds "+totalReadingTime / text.textInfo.characterCount);
             yield return new WaitForSeconds(totalReadingTime / text.textInfo.characterCount);
         }
     }
